@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using Dapper;
+using Introducao.Models;
+using System.Linq;
+using System.Reflection.PortableExecutable;
 
 namespace Introducao
 {
@@ -24,7 +28,16 @@ namespace Introducao
         {
             using (var connection = new SqlConnection(connectionString))
             {
-                
+                // Dapper é uma extensão para executar comandos no banco
+                var categories = connection.Query<Category>("SELECT [Id], [Title] FROM [Category]");
+
+                if (categories.Any())
+                {
+                    foreach (var category in categories)
+                    {
+                        Console.WriteLine($"{category.Id} - {category.Title}");
+                    }
+                }
             }
         }
 
