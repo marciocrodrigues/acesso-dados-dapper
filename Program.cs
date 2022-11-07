@@ -20,18 +20,21 @@ namespace Introducao
             // ExecutarSql(connectionString);
 
             // Utilizando dapper
-            ExecuteSqlViaDapper(connectionString, false, true);
+            ExecuteSqlViaDapper(connectionString, false, true, false);
 
             Console.ReadKey();
         }
 
-        static void ExecuteSqlViaDapper(string connectionString, bool insert = false, bool consulta = false)
+        static void ExecuteSqlViaDapper(string connectionString, bool insert = false, bool consulta = false, bool many = false)
         {
             if (insert)
                 ExecuteInsertCategory(connectionString);
 
             if (consulta)
                 ExecuteListCategory(connectionString);
+
+            if (many)
+                ExecuteCreateManyCategory(connectionString);
         }
 
         static void ExecuteListCategory(string connectionString)
@@ -48,6 +51,67 @@ namespace Introducao
                         Console.WriteLine($"{item.Id} - {item.Title} - {item.Order} - {item.Summary}");
                     }
                 }
+            }
+        }
+
+        static void ExecuteCreateManyCategory(string connectionString)
+        {
+            var category = new Category();
+            var category2 = new Category();
+
+            category.Id = Guid.NewGuid();
+            category.Title = "Amazon AWS 2";
+            category.Url = "amazon 2";
+            category.Description = "Categoria destinada a serviços do AWS 2";
+            category.Order = 9;
+            category.Summary = "AWS Cloud 2";
+            category.Featured = false;
+
+            category2.Id = Guid.NewGuid();
+            category2.Title = "Amazon AWS 3";
+            category2.Url = "amazon 3";
+            category2.Description = "Categoria destinada a serviços do AWS 3";
+            category2.Order = 10;
+            category2.Summary = "AWS Cloud 3";
+            category2.Featured = false;
+
+            var insertSql = @"
+                INSERT INTO
+                    [Category]
+                VALUES (
+                    @Id,
+                    @Title,
+                    @Url,
+                    @Summary,
+                    @Order,
+                    @Description,
+                    @Featured)";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Execute(insertSql, new[]
+                {
+                    new {
+                    Id = category.Id,
+                    Title = category.Title,
+                    Url = category.Url,
+                    Summary = category.Summary,
+                    Order = category.Order,
+                    Description = category.Description,
+                    Featured = category.Featured
+                },
+                new
+                {
+                    Id = category2.Id,
+                    Title = category2.Title,
+                    Url = category2.Url,
+                    Summary = category2.Summary,
+                    Order = category2.Order,
+                    Description = category2.Description,
+                    Featured = category2.Featured
+                }
+                });
+
             }
         }
 
@@ -110,6 +174,16 @@ namespace Introducao
                         Console.WriteLine($"{reader.GetGuid(0)} - {reader.GetString(1)}");
                     }
                 }
+            }
+        }
+
+        static void ExecuteProcedure(string connecionString, Guid idStudent)
+        {
+            using (var connection = new SqlConnection(connecionString))
+            {
+                var procedure = "spDeleteStudent";
+                var pars = new { StudentId = idStudent };
+                connection.Execute(procedure, pars, commandType: CommandType.StoredProcedure);
             }
         }
     }
